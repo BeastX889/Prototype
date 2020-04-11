@@ -14,7 +14,7 @@
             <li>CSS</li>
             <li>C</li>
        </ul>
-       <p> Not visible </p>   <a href="https://beastx889.github.io/hello-world/">Go to google homepage </a>
+       <p> Not visible </p>   <a href="https://beastx889.github.io/hello-world/">Go </a>
        <h3> Time's up bro</h3>
   </body>
 </html>
