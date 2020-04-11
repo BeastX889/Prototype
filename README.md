@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
      <head>
-       <title> Namastay</title>
+          <title> Namastay</title>
      </head>
   <body>
     <h1>  PROTOTYPE</h1>
@@ -14,7 +14,7 @@
             <li>CSS</li>
             <li>C</li>
        </ul>
-       
+       <a href=www.google.com>Go to google homepage </a>
        
   </body>
 </html>
