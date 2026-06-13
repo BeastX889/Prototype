@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--
+      Base theme for the app window. The actual colors are driven by Compose
+      (SpeedMeterTheme); this just provides a no-action-bar window surface.
+    -->
+    <style name="Theme.SpeedMeter" parent="android:Theme.Material.Light.NoActionBar" />
+</resources>
