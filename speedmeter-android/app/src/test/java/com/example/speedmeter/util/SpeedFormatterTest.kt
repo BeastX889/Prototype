@@ -1,0 +1,52 @@
+package com.example.speedmeter.util
+
+import org.junit.Assert.assertEquals
+import org.junit.Test
+
+class SpeedFormatterTest {
+
+    @Test
+    fun zero_isBytes() {
+        assertEquals("0 B/s", SpeedFormatter.format(0))
+    }
+
+    @Test
+    fun negative_clampsToZero() {
+        assertEquals("0 B/s", SpeedFormatter.format(-500))
+    }
+
+    @Test
+    fun belowKilo_staysInBytes() {
+        assertEquals("999 B/s", SpeedFormatter.format(999))
+    }
+
+    @Test
+    fun kiloBoundary_rollsToKb() {
+        assertEquals("1 KB/s", SpeedFormatter.format(1000))
+    }
+
+    @Test
+    fun kilobytes_haveOneDecimalWhenNeeded() {
+        assertEquals("1.2 KB/s", SpeedFormatter.format(1240))
+    }
+
+    @Test
+    fun megaBoundary_rollsToMb() {
+        assertEquals("1 MB/s", SpeedFormatter.format(1_000_000))
+    }
+
+    @Test
+    fun megabytes_roundToOneDecimal() {
+        assertEquals("1.2 MB/s", SpeedFormatter.format(1_200_000))
+    }
+
+    @Test
+    fun gigaBoundary_rollsToGb() {
+        assertEquals("1 GB/s", SpeedFormatter.format(1_000_000_000))
+    }
+
+    @Test
+    fun wholeNumbers_dropTrailingZero() {
+        assertEquals("12 MB/s", SpeedFormatter.format(12_000_000))
+    }
+}
