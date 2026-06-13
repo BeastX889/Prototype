@@ -102,8 +102,14 @@ class SpeedMonitorService : Service() {
             .setOngoing(true)
             .setOnlyAlertOnce(true)
             .setShowWhen(false)
+            // LOW (not MIN) is the floor that still shows the status-bar icon;
+            // MIN would hide the very indicator we want.
             .setPriority(NotificationCompat.PRIORITY_LOW)
             .setCategory(NotificationCompat.CATEGORY_STATUS)
+            // Keep the shade entry as unobtrusive as possible: hidden on the lock
+            // screen. (A foreground service must keep one notification — this is
+            // the minimum it can be while still showing the status-bar number.)
+            .setVisibility(NotificationCompat.VISIBILITY_SECRET)
             .addAction(0, getString(R.string.action_stop), stopIntent)
             .build()
     }

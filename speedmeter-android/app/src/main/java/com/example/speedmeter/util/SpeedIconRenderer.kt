@@ -8,31 +8,37 @@ import android.graphics.Typeface
 import com.example.speedmeter.model.SpeedSample
 
 /**
- * Renders the current speed as a small two-line bitmap so it can be used as the
- * notification's status-bar icon — the trick that puts the live numbers up in
- * the status bar, mimicking the old Samsung indicator.
+ * Renders the current speed as a small bitmap used as the notification's
+ * status-bar icon — the trick that puts the live numbers up in the status bar,
+ * mimicking the old Samsung indicator.
  *
- * The icon is split into a top half (download) and bottom half (upload). Each
- * half shows the numeric value in bold with its unit in a smaller font directly
- * beneath. White is used so the system tints the icon correctly in the status bar.
+ * Layout, tuned for legibility at status-bar size:
+ *   ┌──────────┐
+ *   │   1.2M   │  ← download (top)
+ *   │  ──────  │  ← divider
+ *   │   240K   │  ← upload (bottom)
+ *   └──────────┘
+ *
+ * Each value is drawn as large as will fit, auto-shrinking on wide strings so it
+ * never clips. White on transparent so the system tints it correctly.
  */
 object SpeedIconRenderer {
 
-    private const val SIZE = 96 // px; the system scales this down to status-bar size
-    private const val MID = SIZE / 2f
+    private const val SIZE = 144           // px; the system scales this down
+    private const val MAX_TEXT_WIDTH = 132f // leave a little horizontal padding
+    private const val BASE_TEXT_SIZE = 64f
 
-    private val valuePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+    private val textPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         color = Color.WHITE
         textAlign = Paint.Align.CENTER
         typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
-        textSize = 40f
+        textSize = BASE_TEXT_SIZE
     }
 
-    private val unitPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+    private val dividerPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         color = Color.WHITE
-        textAlign = Paint.Align.CENTER
-        typeface = Typeface.DEFAULT
-        textSize = 26f
+        alpha = 110
+        strokeWidth = 3f
     }
 
     /** Builds a fresh ARGB_8888 bitmap showing both directions of [sample]. */
@@ -40,26 +46,27 @@ object SpeedIconRenderer {
         val bitmap = Bitmap.createBitmap(SIZE, SIZE, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)
 
-        val (downValue, downUnit) = split(SpeedFormatter.format(sample.rxBytesPerSec))
-        val (upValue, upUnit) = split(SpeedFormatter.format(sample.txBytesPerSec))
+        val down = SpeedFormatter.formatCompact(sample.rxBytesPerSec)
+        val up = SpeedFormatter.formatCompact(sample.txBytesPerSec)
 
-        // Top half: download (value baseline ~34, unit baseline ~46).
-        canvas.drawText(downValue, MID, 34f, valuePaint)
-        canvas.drawText(downUnit, MID, 46f, unitPaint)
-        // Bottom half: upload (value baseline ~80, unit baseline ~92).
-        canvas.drawText(upValue, MID, 80f, valuePaint)
-        canvas.drawText(upUnit, MID, 92f, unitPaint)
+        // Top: download. Baseline placed so the row sits in the upper half.
+        drawFitted(canvas, down, baseline = 58f)
+        // Divider between the two readings.
+        canvas.drawLine(22f, 74f, SIZE - 22f, 74f, dividerPaint)
+        // Bottom: upload.
+        drawFitted(canvas, up, baseline = 132f)
 
         return bitmap
     }
 
-    /** Splits "1.2 MB/s" -> ("1.2", "MB/s"); the "/s" is implied by context. */
-    private fun split(formatted: String): Pair<String, String> {
-        val idx = formatted.indexOf(' ')
-        if (idx == -1) return formatted to ""
-        val value = formatted.substring(0, idx)
-        // Drop the "/s" suffix to keep the tiny icon legible (e.g. "MB").
-        val unit = formatted.substring(idx + 1).removeSuffix("/s")
-        return value to unit
+    /** Draws [text] centered, shrinking the font if it would exceed the icon width. */
+    private fun drawFitted(canvas: Canvas, text: String, baseline: Float) {
+        val width = textPaint.measureText(text)
+        val original = textPaint.textSize
+        if (width > MAX_TEXT_WIDTH) {
+            textPaint.textSize = original * (MAX_TEXT_WIDTH / width)
+        }
+        canvas.drawText(text, SIZE / 2f, baseline, textPaint)
+        textPaint.textSize = original // restore for the next row / next render
     }
 }
